@@ -1,7 +1,5 @@
 """Resource management without queue information."""
 from typing import Optional
-from decimal import Decimal, getcontext
-import math
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import expon
@@ -153,6 +151,10 @@ def optimal_n_servers(
     # Exponential expansion.
     right = 1
     while response_short(right) > tail_prob:
+        if right >= 65536:
+            raise ValueError(
+                "65536 servers are not enough to reach the desired delay tail"
+            )
         right *= 2
     left = int(right / 2)
     # Binary search.
@@ -214,7 +216,7 @@ def response_time_tail(
 
 def stat_dist(
     n_servers: int, max_queue: int, arrival_rate: float, service_rate: float
-) -> list[Decimal]:
+) -> list[float]:
     """Calculates stationary distribution of queue length.
 
     Args:
@@ -228,26 +230,20 @@ def stat_dist(
     Returns:
         Pmf of the queue length stationary distribution.
     """
-    getcontext().prec = 28
     rho = arrival_rate / n_servers / service_rate
-    pi0 = Decimal(0)
+    poisson_terms = [1]
     for i in range(n_servers):
-        pi0 = Decimal(pi0) + Decimal(n_servers * Decimal(rho)) ** Decimal(i) / Decimal(
-            math.factorial(i)
-        )
-    pi0 = Decimal(pi0) + Decimal(n_servers * Decimal(rho)) ** Decimal(
-        n_servers
-    ) / Decimal(math.factorial(n_servers)) / Decimal(1 - rho)
-    pi0 = Decimal(1) / Decimal(pi0)
+        poisson_terms.append(poisson_terms[-1] * (n_servers * rho) / (i + 1))
+    pi0 = 1 / (sum(poisson_terms[:-1]) + poisson_terms[-1] / (1 - rho))
     dist = [pi0]
     # i + 1 is the queue length.
     for i in range(min(n_servers, max_queue)):
-        dist.append(dist[i] * Decimal(arrival_rate) / service_rate / (i + 1))
+        dist.append(dist[i] * arrival_rate / service_rate / (i + 1))
     # If max_queue has been reached, no more calculation is done.
     for i in range(n_servers, max_queue):
-        dist.append(dist[i] * Decimal(rho))
+        dist.append(dist[i] * rho)
     return dist
 
 
 if __name__ == "__main__":
-    print("optimal:", optimal_n_servers(2, 0.1, 100, 0.8, 1))
+    print("optimal:", optimal_n_servers(3, 0.1, 100, 0.8, 1))
