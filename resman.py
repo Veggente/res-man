@@ -118,7 +118,11 @@ def single_service():
 
 
 def optimal_n_servers(
-    delay_threshold: float, tail_prob: float, max_queue: int, rho: float
+    delay_threshold: float,
+    tail_prob: float,
+    max_queue: int,
+    arrival_rate: float,
+    service_rate: float,
 ) -> int:
     """Finds the optimal number of servers.
 
@@ -126,7 +130,8 @@ def optimal_n_servers(
         delay_threshold: Maximum desired delay.
         tail_prob: Maximum tail probability.
         max_queue: Maximum queue length.
-        rho: System load.
+        arrival_rate: Arrival rate.
+        service_rate: Service rate.
 
     Returns:
         Optimal number of servers.
@@ -141,7 +146,9 @@ def optimal_n_servers(
         Returns:
             Tail probability.
         """
-        return response_time_tail(n_servers, delay_threshold, max_queue, rho)
+        return response_time_tail(
+            n_servers, delay_threshold, max_queue, arrival_rate, service_rate
+        )
 
     # Exponential expansion.
     right = 1
@@ -159,7 +166,11 @@ def optimal_n_servers(
 
 
 def response_time_tail(
-    n_servers: int, delay_threshold: float, max_queue: int, rho: float
+    n_servers: int,
+    delay_threshold: float,
+    max_queue: int,
+    arrival_rate: float,
+    service_rate: float,
 ) -> float:
     """Calculates the response time tail probability.
 
@@ -167,12 +178,12 @@ def response_time_tail(
         n_servers: Number of servers.
         delay_threshold: Maximum desired delay.
         max_queue: Maximum queue length.
-        rho: System load.
+        arrival_rate: Arrival rate.
+        service_rate: Service rate.
 
     Returns:
         Tail probability.
     """
-    service_rate = 1
     resp = [expon.sf(delay_threshold * service_rate)] * min(n_servers, max_queue + 1)
     # i is the queue length seen at arrival.
     # See waiting.pdf for the analysis.
@@ -195,11 +206,15 @@ def response_time_tail(
             first_whole = first
         resp.append(first_whole + second_cumu)
         second *= n_servers * service_rate * delay_threshold / (i - n_servers + 1)
-    pmf = [float(x) for x in stat_dist(n_servers, max_queue, rho)]
+    pmf = [
+        float(x) for x in stat_dist(n_servers, max_queue, arrival_rate, service_rate)
+    ]
     return np.inner(resp, pmf)
 
 
-def stat_dist(n_servers: int, max_queue: int = 20, rho: float = 0.8) -> list[Decimal]:
+def stat_dist(
+    n_servers: int, max_queue: int, arrival_rate: float, service_rate: float
+) -> list[Decimal]:
     """Calculates stationary distribution of queue length.
 
     Args:
@@ -207,14 +222,14 @@ def stat_dist(n_servers: int, max_queue: int = 20, rho: float = 0.8) -> list[Dec
         max_queue: Maximum queue length after truncation.  Probability
             masses of larger queue lengths are dropped and the pmf is
             not normalized.
-        rho: System load.
+        arrival_rate: Arrival rate.
+        service_rate: Service rate.
 
     Returns:
         Pmf of the queue length stationary distribution.
     """
     getcontext().prec = 28
-    service_rate = 1
-    arrival_rate = n_servers * Decimal(rho) * Decimal(service_rate)
+    rho = arrival_rate / n_servers / service_rate
     pi0 = Decimal(0)
     for i in range(n_servers):
         pi0 = Decimal(pi0) + Decimal(n_servers * Decimal(rho)) ** Decimal(i) / Decimal(
@@ -227,7 +242,7 @@ def stat_dist(n_servers: int, max_queue: int = 20, rho: float = 0.8) -> list[Dec
     dist = [pi0]
     # i + 1 is the queue length.
     for i in range(min(n_servers, max_queue)):
-        dist.append(dist[i] * arrival_rate / service_rate / (i + 1))
+        dist.append(dist[i] * Decimal(arrival_rate) / service_rate / (i + 1))
     # If max_queue has been reached, no more calculation is done.
     for i in range(n_servers, max_queue):
         dist.append(dist[i] * Decimal(rho))
@@ -235,4 +250,4 @@ def stat_dist(n_servers: int, max_queue: int = 20, rho: float = 0.8) -> list[Dec
 
 
 if __name__ == "__main__":
-    print("optimal:", optimal_n_servers(2, 0.1, 100, 0.8))
+    print("optimal:", optimal_n_servers(2, 0.1, 100, 0.8, 1))
