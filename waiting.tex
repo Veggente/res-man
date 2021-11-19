@@ -1,0 +1,56 @@
+\documentclass[12pt]{article}
+\include{header}
+
+\title{Delay of a microservice system}
+\begin{document}
+\maketitle
+
+A microservice system is modeled by an M/M/$n$ queue.  Let the service
+rate and the arrival rate be $\mu$ and $\lambda$.  The stationary
+distribution of queue length is given by
+\[p_0 = \left[1 + \sum_{k = 1}^{n - 1}\frac{(n\rho)^k}{k!} + \sum_{k =
+      n}^\infty \frac{(n\rho)^k}{n!n^{k - n}}\right]^{-1}\]
+and for $i \ge 1$,
+\[p_i =
+  \begin{cases}
+    p_0\frac{(n\rho)^i}{i!} & \text{if }i \le n,\\
+    p_0\frac{\rho^in^n}{n!} & \text{if }i > n,
+  \end{cases}
+\]
+where $\rho = \lambda / (n\mu)$.  Let the waiting time of an arrival
+seeing a queue length of $i$ in stationary distribution be $Z$.  For
+$0\le i \le n - 1$, the task does not wait, so $Z$ is
+$\mathsf{Exp}(\mu)$.  For $i\ge n$, $Z = X + Y$, where the waiting
+time $X$ is $\mathsf{Erlang}(i - n + 1, n\mu)$ and the service time
+$Y$ is $\mathsf{Exp}(\mu)$.  The two random variables $X$ and $Y$ are
+independent.  The tail probability of $X + Y$ is
+\begin{align*}
+  \Pr\{X + Y > t\} & = \E\Pr(X + Y > t\mid X)\\
+  & = \E[e^{-\mu(t - X)}\wedge 1]\\
+  & = \E e^{-\mu(t - X)}\indicator{X \le t} + \Pr\{X > t\}.
+\end{align*}
+Note the first term is
+\begin{align*}
+  \E e^{-\mu(t - X)}\indicator{X \le t} & = \int_0^te^{-\mu(t - x)}\frac{(n\mu)^{i - n + 1}x^{i - n}e^{-n\mu x}}{(i - n)!}\d x\\
+  & = e^{-\mu t}n\mu\int_0^t\frac{(n\mu x)^{i - n}e^{-(n - 1)\mu x}}{(i - n)!}\d x\\
+  & =
+    \begin{cases}
+      \left(\frac n{n - 1}\right)^{i - n + 1}e^{-\mu t}P(i - n + 1, (n - 1)\mu t) & \text{if }n > 1,\\
+      \frac{(\mu t)^i}{i!}e^{-\mu t} & \text{if }n = 1,
+    \end{cases}
+\end{align*}
+where $P(a, x)\defeq\frac 1{(a - 1)!}\int_0^xt^{a - 1}e^{-t}\d t$ is
+the regularized lower incomplete gamma function.
+
+The second term is
+\[\Pr\{X > t\} = \sum_{k = 0}^{i - n}\frac 1{k!}e^{-n\mu t}(n\mu t)^k.\]
+
+% \bibliographystyle{plainnat}
+% \bibliography{grn}
+
+\end{document}
+
+%%% Local Variables:
+%%% mode: latex
+%%% TeX-master: t
+%%% End:
