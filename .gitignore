@@ -3,3 +3,5 @@
 *.log
 *.out
 /waiting.pdf
+initial.ipynb
+.ipynb_checkpoints/
