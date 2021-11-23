@@ -149,14 +149,15 @@ def optimal_n_servers(
         )
 
     # Exponential expansion.
-    right = 1
+    left = int(arrival_rate / service_rate)
+    right = left + 1
     while response_short(right) > tail_prob:
         if right >= 65536:
             raise ValueError(
                 "65536 servers are not enough to reach the desired delay tail"
             )
+        left = right
         right *= 2
-    left = int(right / 2)
     # Binary search.
     while left != right - 1:
         middle = int((left + right) / 2)
