@@ -1,0 +1,70 @@
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{setspace}
+\doublespacing
+\usepackage{fullpage}
+\usepackage[pdftex]{graphicx}
+\graphicspath{{figures/}}
+\usepackage{xcolor}
+
+% Verbatim with soft grey background.
+% Taken from Enrico Gregorio and Lightness Races in Orbit at
+% https://tex.stackexchange.com/questions/141100/getting-verbatim-with-soft-grey-background-as-in-tex-stackexchange/141128#141128
+\usepackage{newverbs}
+\definecolor{cverbbg}{gray}{0.93}
+\newverbcommand{\cverb}
+  {\setbox\verbbox\hbox\bgroup}
+  {\egroup\colorbox{cverbbg}{\box\verbbox}}
+\newenvironment{lcverbatim}
+ {\SaveVerbatim{cverb}}
+ {\endSaveVerbatim
+  \flushleft\fboxrule=0pt\fboxsep=.5em
+  \colorbox{cverbbg}{%
+    \makebox[\dimexpr\linewidth-2\fboxsep][l]{\BUseVerbatim{cverb}}%
+  }
+  \endflushleft
+}
+
+\usepackage{booktabs}
+\usepackage[numbers]{natbib}
+\usepackage{doi}
+\usepackage{hyperref}
+\definecolor{darkblue}{rgb}{.15,0,.7}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=darkblue,
+  citecolor=darkblue,
+  urlcolor=darkblue
+}
+\usepackage{grffile}% To solve the "unknown graphic extension" issue.
+\usepackage{etoolbox}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\DeclareMathOperator*{\minimize}{minimize}%
+\DeclareMathOperator*{\sgn}{sgn}%
+\DeclareMathOperator*{\supp}{supp}%
+\DeclareMathOperator*{\argmin}{arg\,min}%
+\DeclareMathOperator*{\hessian}{H}%
+\DeclareMathOperator*{\var}{Var}
+\newcommand{\defeq}{\triangleq}
+\newcommand{\reals}{\mathbb{R}}% Set of real numbers.
+\newcommand{\naturalnumbers}{\mathbb N}% Natural numbers.
+\renewcommand{\Pr}{\operatorname{\mathbb P}}% Probability.
+\newcommand{\E}{\operatorname{\mathbb E}}% Mathematical expectation.
+\newcommand{\law}{\operatorname{\mathcal L}}% Law.
+\newcommand{\fedeq}{=:}
+\newcommand{\ind}[2]{\left(#1\colon #2\right)} % Indexed family.
+\usepackage{amsthm}
+\newtheorem{exam}{Example}
+\newtheorem{definition}{Definition}
+\newtheorem{remark}{Remark}
+\newtheorem{prop}{Proposition}
+\newtheorem{cor}{Corollary}
+\newtheorem{lemma}{Lemma}
+\newtheorem{conj}{Conjecture}
+\newcommand{\indicator}[1]{\mathbb{I}(#1)}% Indicator function.
+\newcommand{\set}[2]{\left\{#1\colon #2\right\}}% Set builder.
+\renewcommand{\d}{\mathop{}\!\mathrm{d}}% by egrep at http://tex.stackexchange.com/questions/5511/good-practice-on-spacing
+\renewcommand{\hat}{\widehat}
+\newcommand{\setvar}[1]{\left\{#1\right\}}% Enumerative set.
+\usepackage{subcaption}
